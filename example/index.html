@@ -23,26 +23,6 @@
         </style>
 
         <script>
-            function calcWCAGContrast(srcColor, dstColor) {
-                if( !(srcColor instanceof Color && dstColor instanceof Color) ) {
-                    return null;
-                }
-
-                if( !(srcColor instanceof RGBColor) ) {
-                    srcColor = srcColor.toRgb();
-                }
-                if( !(dstColor instanceof RGBColor) ) {
-                    dstColor = dstColor.toRgb();
-                }
-                
-                let l1 = (0.2126 * srcColor.r / 255) + (0.7152 * srcColor.g / 255) + (0.0722 * srcColor.b / 255) + 0.05;
-                let l2 = (0.2126 * dstColor.r / 255) + (0.7152 * dstColor.g / 255) + (0.0722 * dstColor.b / 255) + 0.05;
-                
-                let contrast = Math.round(Math.max(l1, l2) / Math.min(l1, l2) * 10) / 10;
-                
-                return contrast;
-            }
-
             let interval;
             function initColorBadge(baseColor) {
                 if( interval ) {
@@ -72,8 +52,8 @@
                     badge.innerText = htmlColorName.toCssString();
 
                     let rgb = htmlColorName.toRgb();
-                    let contrast1 = calcWCAGContrast(htmlColorName, new RGBColor(0, 0, 0));
-                    let contrast2 = calcWCAGContrast(htmlColorName, new RGBColor(255, 255, 255));
+                    let contrast1 = calcWCAGContrast(htmlColorName, new RGBColor(0, 0, 0), {size: 12}).contrast;
+                    let contrast2 = calcWCAGContrast(htmlColorName, new RGBColor(255, 255, 255), {size: 12}).contrast;
                     
                     if( contrast1 >= contrast2 ) {
                         badge.style.color = "black";
@@ -103,7 +83,7 @@
             }
 
             window.onload = _ => {
-                initColorBadge(new RGBColor(0, 0, 0));
+                initColorBadge(new RGBColor(255, 255, 255));
             };
         </script>
     </head>
