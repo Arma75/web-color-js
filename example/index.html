@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <title>COLOR SORT</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="../style/common.css" type="text/css"/>
+        <script type="text/javascript" src="../web-color.js"></script>
+
+        <style>
+            body {
+                padding: 2.5rem;
+                min-width: 100vw;
+                min-height: 100vh;
+            }
+
+            #colorBadgeSection {
+                display: flex;
+                justify-content: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+        </style>
+
+        <script>
+            function calcWCAGContrast(srcColor, dstColor) {
+                if( !(srcColor instanceof Color && dstColor instanceof Color) ) {
+                    return null;
+                }
+
+                if( !(srcColor instanceof RGBColor) ) {
+                    srcColor = srcColor.toRgb();
+                }
+                if( !(dstColor instanceof RGBColor) ) {
+                    dstColor = dstColor.toRgb();
+                }
+                
+                let l1 = (0.2126 * srcColor.r / 255) + (0.7152 * srcColor.g / 255) + (0.0722 * srcColor.b / 255) + 0.05;
+                let l2 = (0.2126 * dstColor.r / 255) + (0.7152 * dstColor.g / 255) + (0.0722 * dstColor.b / 255) + 0.05;
+                
+                let contrast = Math.round(Math.max(l1, l2) / Math.min(l1, l2) * 10) / 10;
+                
+                return contrast;
+            }
+
+            let interval;
+            function initColorBadge(baseColor) {
+                if( interval ) {
+                    clearInterval(interval);
+                }
+
+                let keys = Object.keys(HTML_COLOR_NAMES);
+                let hslColorList = [];
+                for( let i = 0; i < keys.length; i++ ) {
+                    let htmlColorName = new HtmlColorName(keys[i]);
+                    let dist = calcDistanceColor(baseColor, htmlColorName);
+
+                    hslColorList.push({htmlColorName, dist});
+                }
+
+                hslColorList.sort((a, b) => a.dist - b.dist);
+
+                let i = 0;
+                colorBadgeSection.innerHTML = "";
+                interval = setInterval(_ => {
+                    let htmlColorName = hslColorList[i].htmlColorName;
+                    
+                    let badge = document.createElement("span");
+                    badge.className = "badge-xsmall";
+                    badge.style.cursor = "pointer";
+                    badge.style.backgroundColor = htmlColorName.toCssString();
+                    badge.innerText = htmlColorName.toCssString();
+
+                    let rgb = htmlColorName.toRgb();
+                    let contrast1 = calcWCAGContrast(htmlColorName, new RGBColor(0, 0, 0));
+                    let contrast2 = calcWCAGContrast(htmlColorName, new RGBColor(255, 255, 255));
+                    
+                    if( contrast1 >= contrast2 ) {
+                        badge.style.color = "black";
+                    } else {
+                        badge.style.color = "white";
+                    }
+
+                    badge.addEventListener("click", _ => {
+                        initColorBadge(htmlColorName);
+                    });
+
+                    colorBadgeSection.appendChild(badge);
+
+                    if( ++i === hslColorList.length ) {
+                        clearInterval(interval);
+                    }
+                }, 5);
+
+                let hslColor = hslColorList[0].htmlColorName.toHsl();
+                if( hslColor.l < 0.2 ) {
+                    hslColor = hslColor.with({l: hslColor.l + 0.2});
+                } else {
+                    hslColor = hslColor.with({l: hslColor.l - 0.2});
+                }
+                
+                document.body.style.background = `linear-gradient(135deg, ${hslColor.toCssString()}, ${hslColorList[0].htmlColorName.name})`;
+            }
+
+            window.onload = _ => {
+                initColorBadge(new RGBColor(0, 0, 0));
+            };
+        </script>
+    </head>
+
+    <body>
+        <section id="colorBadgeSection">
+        </section>
+    </body>
+</html>
