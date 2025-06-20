@@ -11,3 +11,7 @@
 
 ## ✨ 색상 유틸 기능
 * **색상 거리 측정:** `calcDistanceColor(srcColor, dstColor, options)`: HSL 색상 공간에서 두 색상 간의 지각적 거리를 계산하며, Hue, Saturation, Lightness에 각각 가중치 적용 가능.
+
+## 📦 CDN (권장 - 빠르고 간편한 사용)
+```html
+<script src="https://cdn.jsdelivr.net/gh/Arma75/web-color-js@main/web-color.js"></script>
