@@ -15,4 +15,4 @@
 
 ## 📦 CDN
 ```html
-<script src="https://cdn.jsdelivr.net/gh/Arma75/web-color-js@main/web-color.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/Arma75/web-color-js@latest/web-color.js"></script>
