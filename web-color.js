@@ -1,5 +1,7 @@
 /**
- * HTML 색상명 목록
+ * HTML 색상명 목록 상수
+ * 
+ * 이 상수는 Object.freeze()를 통해 불변성을 보장합니다
  */
 const HTML_COLOR_NAMES = {
     "aliceblue": "#F0F8FF",
@@ -151,6 +153,7 @@ const HTML_COLOR_NAMES = {
     "yellow": "#FFFF00",
     "yellowgreen": "#9ACD32"
 };
+Object.freeze(HTML_COLOR_NAMES);
 
 class Color {
     /**
@@ -1030,4 +1033,79 @@ function calcDistanceColor(srcColor, dstColor, {weightH = 1, weightS = 300, weig
     let dl = srcColor.l - dstColor.l;
 
     return Math.sqrt(Math.pow(dh, 2) * weightH + Math.pow(ds, 2) * weightS + Math.pow(dl, 2) * weightL);
+}
+
+/**
+ * WCAG (Web Content Accessibility Guidelines) 에서 권장하는 최소 대비율을 정의합니다
+ * normalText: 일반 텍스트 (18pt 미만 또는 bold 14pt 미만)
+ * largeText: 큰 텍스트 (18pt 이상 또는 bold 14pt 이상)
+ * 
+ * 이 상수는 Object.freeze()를 통해 불변성을 보장합니다
+ */
+const WCAG_MINIMUM_RATIOS = {
+    /**
+     * 레벨 AA (Minimum Contrast - 최소 대비) 요구사항
+     * normalText: 최소 대비율 (4.5:1)
+     * largeText: 최소 대비율 (3:1)
+     */
+    AA: {
+        normalText: 4.5,
+        largeText: 3.0
+    },
+    /**
+     * 레벨 AAA (Enhanced Contrast - 향상된 대비) 요구사항
+     * normalText: 최소 대비율 (7:1)
+     * largeText: 최소 대비율 (4.5:1)
+     */
+    AAA: {
+        normalText: 7.0,
+        largeText: 4.5
+    }
+};
+Object.freeze(WCAG_MINIMUM_RATIOS);
+
+/**
+ * 두 색상 간의 WCAG (Web Content Accessibility Guidelines) 대비율을 계산하고,
+ * 텍스트 크기와 볼드 여부에 따라 WCAG 레벨(AA 또는 AAA)을 계산합니다
+ *
+ * @param {Color} srcColor Color 클래스의 자식 클래스의 객체
+ * @param {Color} dstColor Color 클래스의 자식 클래스의 객체
+ * @param {number} [options.size=16] - 텍스트의 폰트 크기 (pt 단위). 큰 텍스트 여부 판단에 사용
+ * @param {boolean} [options.isBold=false] - 텍스트가 볼드체인지 여부. 큰 텍스트 여부 판단에 사용
+ * @returns {{level: string|null, contrast: number}|null} 계산된 WCAG 레벨("AA", "AAA")과 대비율 값을 포함하는 객체. 입력 색상 객체가 유효하지 않으면 null 반환
+ */
+function calcWCAGContrast(srcColor, dstColor, {size = 16, isBold = false} = {}) {
+    if( !(srcColor instanceof Color && dstColor instanceof Color) ) {
+        return null;
+    }
+
+    if( !(srcColor instanceof RGBColor) ) {
+        srcColor = srcColor.toRgb();
+    }
+    if( !(dstColor instanceof RGBColor) ) {
+        dstColor = dstColor.toRgb();
+    }
+
+    function _toLinearValue(value) {
+        value /= 255;
+        return value <= 0.03928? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+    }
+
+    let weights = [0.2126, 0.7152, 0.0722];
+    let l1 = [srcColor.r, srcColor.g, srcColor.b].map((v, i) => _toLinearValue(v) * weights[i]).reduce((a, b) => a + b, 0);
+    let l2 = [dstColor.r, dstColor.g, dstColor.b].map((v, i) => _toLinearValue(v) * weights[i]).reduce((a, b) => a + b, 0);
+
+    let level = null;
+    let contrast = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    contrast = Math.round(contrast * 10) / 10;
+    
+    let isLargeText = size >= 18 || (size >= 14 && isBold);
+    let keys = Object.keys(WCAG_MINIMUM_RATIOS);
+    for( let i = 0; i < keys.length; i++ ) {
+        if( WCAG_MINIMUM_RATIOS[keys[i]][isLargeText? "largeText" : "normalText"] <= contrast ) {
+            level = keys[i];
+        }
+    }
+    
+    return {level, contrast};
 }
