@@ -1109,3 +1109,63 @@ function calcWCAGContrast(srcColor, dstColor, {size = 16, isBold = false} = {}) 
     
     return {level, contrast};
 }
+
+/**
+ * 디폴트 색상 스케일 정보를 정의합니다
+ * 해당 색상 스케일은 950(0.12%)에서 50(0.98%)까지 총 11개의 단계로 구성됩니다
+ * 
+ * 이 상수는 Object.freeze()를 통해 불변성을 보장합니다
+ */
+const COLOR_SCALE_INFO = {
+    "0.12": "950",
+    "0.15": "900",
+    "0.25": "800",
+    "0.35": "700",
+    "0.45": "600",
+    "0.55": "500",
+    "0.65": "400",
+    "0.75": "300",
+    "0.85": "200",
+    "0.95": "100",
+    "0.98": "50"
+};
+Object.freeze(COLOR_SCALE_INFO);
+
+/**
+ * 스케일 정보와 기준 색상을 통해 색상 스케일 목록을 생성합니다
+ * index를 입력한다면 기준 색상의 스케일 범위를 index 위치로 고정하고,
+ * 다른 범위는 상대적인 명도값으로 계산합니다.
+ *
+ * @param {Object} colorScaleInfo 색상 스케일 정보 객체. ("명도값": "스케일명")으로 구성된 객체
+ * @param {Color} color Color 클래스의 자식 클래스의 객체
+ * @param {number} index color의 스케일 위치
+ * @returns {{scale: string, color: HSLColor}|null} 생성된 색상 스케일 객체 목록
+ */
+function createColorScaleList(colorScaleInfo, color, index) {
+    if( !(color instanceof Color) ) {
+        return null;
+    }
+
+    let hslColor = color;
+    if( !(color instanceof HSLColor) ) {
+        hslColor = color.toHsl();
+    }
+    
+    let keys = Object.keys(colorScaleInfo);
+    let colorScaleList = [];
+    let [h, s, l] = [hslColor.h, hslColor.s, hslColor.l];
+
+    if( isNaN(index) ) {
+        for( let i = 0; i < keys.length; i++ ) {
+            colorScaleList.push({scale: colorScaleInfo[keys[i]], color: new HSLColor(h, s, keys[i])});
+        }
+    } else {
+        index = Math.min(keys.length - 1, index);
+        for( let i = 0; i < keys.length; i++ ) {
+            let gap = keys[index] - keys[i];
+            colorScaleList.push({scale: colorScaleInfo[keys[i]], color: new HSLColor(h, s, l - gap)});
+        }
+    }
+    
+    return colorScaleList;
+}
