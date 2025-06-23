@@ -1,5 +1,5 @@
 /**
- * HTML 색상명 목록 상수
+ * HTML에서 사용하는 색상명 148개의 정보를 정의합니다.
  * 
  * 이 상수는 Object.freeze()를 통해 불변성을 보장합니다
  */
@@ -639,6 +639,8 @@ class HSLColor extends Color {
      * @private
      */
     _normalizeHue(h) {
+        h = Number(h);
+        
         if( !isNaN(h) && typeof h === "number" ) {
             return Math.max(0, Math.min(360, (h % 360 + 360) % 360));
         } else {
@@ -657,6 +659,7 @@ class HSLColor extends Color {
         if( typeof s === "string" && s.endsWith("%") ) {
             s = Number(s.slice(0, -1));
         }
+        s = Number(s);
 
         if( !isNaN(s) && typeof s === "number" ) {
             return Math.max(0, Math.min(1, s));
@@ -676,6 +679,7 @@ class HSLColor extends Color {
         if( typeof l === "string" && l.endsWith("%") ) {
             l = Number(l.slice(0, -1));
         }
+        l = Number(l);
 
         if( !isNaN(l) && typeof l === "number" ) {
             return Math.max(0, Math.min(1, l));
@@ -692,6 +696,8 @@ class HSLColor extends Color {
      * @private
      */
     _normalizeAlpha(a) {
+        a = Number(a);
+
         if( !isNaN(a) && typeof a === "number" ) {
             return Math.max(0, Math.min(1, a));
         } else {
