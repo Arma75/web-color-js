@@ -83,7 +83,26 @@
             }
 
             window.onload = _ => {
-                initColorBadge(new RGBColor(255, 255, 255));
+                // initColorBadge(new RGBColor(255, 255, 255));
+
+                // let color = new RGBColor(128, 128, 128, 0.5);
+                // let color = new HexColor("#8888");
+                // let color = new HSLColor(0, 0, 0.5, 0.5);
+                // let color = new HSVColor(0, 0, 0.5, 0.5);
+                let color = new HtmlColorName("grey");
+                console.log(color.toRgb());
+                console.log(color.toHex());
+                console.log(color.toHsl());
+                console.log(color.toHsv());
+                console.log(color.toHtmlColorName());
+                console.log(color.lighten());
+                console.log(color.darken());
+                console.log(color.from(new RGBColor(255, 0, 0, 0.1)));
+                console.log(color.from(1));
+                // let color = new HexColor("#888");
+                // console.log(color);
+                // console.log(color.lighten());
+                // console.log(color.darken());
             };
         </script>
     </head>

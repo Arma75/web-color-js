@@ -169,6 +169,79 @@ class Color {
     with(obj) {
         throw new Error("Method 'with()' must be implemented.");
     }
+
+    /**
+     * 다른 객체 값을 통해 현재 클래스의 객체를 신규로 생성하여 반환합니다
+     * @param {Color} 색상 객체
+     * @returns {Color} 현재 클래스 신규 객체
+     */
+    from(color) {
+        throw new Error("Method 'from()' must be implemented.");
+    }
+
+    /**
+     * 현재 객체 값에 해당하는 신규 RGBColor 객체를 반환합니다
+     * @returns {RGBColor} 현재 객체 값에 해당하는 신규 RGBColor 객체
+     */
+    toRgb() {
+        throw new Error("Method 'toRgb()' must be implemented.");
+    }
+
+    /**
+     * 현재 객체 값에 해당하는 신규 HexColor 객체를 반환합니다
+     * @returns {HexColor} 현재 객체 값에 해당하는 신규 HexColor 객체
+     */
+    toHex() {
+        throw new Error("Method 'toHex()' must be implemented.");
+    }
+
+    /**
+     * 현재 객체 값에 해당하는 신규 HSLColor 객체를 반환합니다
+     * @returns {HSLColor} 현재 객체 값에 해당하는 신규 HSLColor 객체
+     */
+    toHsl() {
+        throw new Error("Method 'toHsl()' must be implemented.");
+    }
+
+    /**
+     * 현재 객체 값에 해당하는 신규 HSVColor 객체를 반환합니다
+     * @returns {HSVColor} 현재 객체 값에 해당하는 신규 HSVColor 객체
+     */
+    toHsv() {
+        throw new Error("Method 'toHsv()' must be implemented.");
+    }
+
+    /**
+     * 현재 객체 값에 해당하는 신규 HtmlColorName 객체를 반환합니다
+     * @returns {HtmlColorName} 현재 객체 값에 해당하는 신규 HtmlColorName 객체
+     */
+    toHtmlColorName() {
+        throw new Error("Method 'toHtmlColorName()' must be implemented.");
+    }
+
+    lighten(amount) {
+        amount = amount? amount : 0.1;
+
+        let hslColor = this;
+        if( !(hslColor instanceof HSLColor) ) {
+            hslColor = hslColor.toHsl();
+        }
+        hslColor = hslColor.with({l: hslColor.l + amount});
+
+        return this.from(hslColor);
+    }
+
+    darken(amount) {
+        amount = amount? amount : 0.1;
+
+        let hslColor = this;
+        if( !(hslColor instanceof HSLColor) ) {
+            hslColor = hslColor.toHsl();
+        }
+        hslColor = hslColor.with({l: hslColor.l - amount});
+
+        return this.from(hslColor);
+    }
 }
 
 /**
@@ -243,11 +316,34 @@ class RGBColor extends Color {
     }
 
     /**
+     * 다른 객체 값을 통해 현재 클래스의 객체를 신규로 생성하여 반환합니다
+     * @param {Color} 색상 객체
+     * @returns {RGBColor} 현재 클래스 신규 객체
+     */
+    from(color) {
+        if( color instanceof RGBColor ) {
+            return new RGBColor(color.r, color.g, color.b, color.a);
+        } else if( color instanceof Color ) {
+            return color.toRgb();
+        } else {
+            throw new Error(`Conversion to ${this.constructor.name} from ${color.constructor.name} is not supported.`);
+        }
+    }
+
+    /**
+     * 현재 RGBColor 값에 해당하는 신규 RGBColor 객체를 반환합니다
+     * @returns {RGBColor} 현재 RGBColor 값에 해당하는 신규 RGBColor 객체
+     */
+    toRgb() {
+        return new RGBColor(this.r, this.g, this.b, this.a);
+    }
+
+    /**
      * 현재 RGBColor 값에 해당하는 신규 HexColor 객체를 반환합니다
      * @returns {HexColor} 현재 RGBColor 값에 해당하는 신규 HexColor 객체
      */
     toHex() {
-        return new HexColor([this.r, this.g, this.b].reduce((n, m) => n + (+m).toString(16).padStart(2, "0"), "#"));
+        return new HexColor([this.r, this.g, this.b].reduce((n, m) => n + (+m).toString(16).padStart(2, "0"), "#"), this.a);
     }
 
     /**
@@ -282,7 +378,7 @@ class RGBColor extends Color {
             }
         }
 
-        return new HSLColor(h * 60, s, l);
+        return new HSLColor(h * 60, s, l, this.a);
     }
 
     /**
@@ -313,7 +409,7 @@ class RGBColor extends Color {
             s = delta / max;
         }
         
-        return new HSVColor(h, s, v);
+        return new HSVColor(h, s, v, this.a);
     }
 
     /**
@@ -377,16 +473,17 @@ class HexColor extends Color {
         }
 
         // 각 값을 정규화하고, 유효하지 않은 값인 경우 디폴트 값 지정
-        this.hex = this._normalizeHexValue(hex);
-
         // hex가 투명도가 포함된 값인 경우 hex에서 투명도 값 추출
         // 아닌 경우 a에서 투명도 값 추출
         if( typeof hex === "string" && hex.startsWith("#") ) {
             hex = hex.substr(1);
         }
+
         if( hex.length === 4 || hex.length === 8 ) {
+            this.hex = this._normalizeHexValue(hex.substr(1, hex.length - hex.length / 4));
             this.a = this._normalizeAlpha(hex);
         } else {
+            this.hex = this._normalizeHexValue(hex);
             this.a = this._normalizeAlpha(a);
         }
 
@@ -431,6 +528,21 @@ class HexColor extends Color {
     }
 
     /**
+     * 다른 객체 값을 통해 현재 클래스의 객체를 신규로 생성하여 반환합니다
+     * @param {Color} 색상 객체
+     * @returns {HexColor} 현재 클래스 신규 객체
+     */
+    from(color) {
+        if( color instanceof HexColor ) {
+            return new HexColor(color.hex, color.a);
+        } else if( color instanceof Color ) {
+            return color.toHex();
+        } else {
+            throw new Error(`Conversion to ${this.constructor.name} from ${color.constructor.name} is not supported.`);
+        }
+    }
+
+    /**
      * 현재 HexColor 값에 해당하는 신규 RGBColor 객체를 반환합니다
      * @returns {RGBColor} 현재 HexColor 값에 해당하는 신규 RGBColor 객체
      */
@@ -440,7 +552,15 @@ class HexColor extends Color {
         let g = (bigint >> 8) & 255;
         let b = bigint & 255;
         
-        return new RGBColor(r, g, b);
+        return new RGBColor(r, g, b, this.a);
+    }
+
+    /**
+     * 현재 HexColor 값에 해당하는 신규 HexColor 객체를 반환합니다
+     * @returns {HexColor} 현재 HexColor 값에 해당하는 신규 HexColor 객체
+     */
+    toHex() {
+        return new HexColor(this.hex, this.a);
     }
 
     /**
@@ -587,6 +707,21 @@ class HSLColor extends Color {
     }
 
     /**
+     * 다른 객체 값을 통해 현재 클래스의 객체를 신규로 생성하여 반환합니다
+     * @param {Color} 색상 객체
+     * @returns {HSLColor} 현재 클래스 신규 객체
+     */
+    from(color) {
+        if( color instanceof HSLColor ) {
+            return new HSLColor(color.h, color.s, color.l, color.a);
+        } else if( color instanceof Color ) {
+            return color.toHsl();
+        } else {
+            throw new Error(`Conversion to ${this.constructor.name} from ${color.constructor.name} is not supported.`);
+        }
+    }
+
+    /**
      * 현재 HSLColor 값에 해당하는 신규 RGBColor 객체를 반환합니다
      * @returns {RGBColor} 현재 HSLColor 값에 해당하는 신규 RGBColor 객체
      */
@@ -612,6 +747,14 @@ class HSLColor extends Color {
      */
     toHex() {
         return this.toRgb().toHex();
+    }
+
+    /**
+     * 현재 HSLColor 값에 해당하는 신규 HSLColor 객체를 반환합니다
+     * @returns {HSLColor} 현재 HSLColor 값에 해당하는 신규 HSLColor 객체
+     */
+    toHsl() {
+        return new HSLColor(this.h, this.s, this.l, this.a);
     }
 
     /**
@@ -765,6 +908,21 @@ class HSVColor extends Color {
     }
 
     /**
+     * 다른 객체 값을 통해 현재 클래스의 객체를 신규로 생성하여 반환합니다
+     * @param {Color} 색상 객체
+     * @returns {HSVColor} 현재 클래스 신규 객체
+     */
+    from(color) {
+        if( color instanceof HSVColor ) {
+            return new HSVColor(color.h, color.s, color.v, color.a);
+        } else if( color instanceof Color ) {
+            return color.toHsl();
+        } else {
+            throw new Error(`Conversion to ${this.constructor.name} from ${color.constructor.name} is not supported.`);
+        }
+    }
+
+    /**
      * 현재 HSVColor 값에 해당하는 신규 RGBColor 객체를 반환합니다
      * @returns {RGBColor} 현재 HSVColor 값에 해당하는 신규 RGBColor 객체
      */
@@ -793,7 +951,15 @@ class HSVColor extends Color {
         g = Math.round((g + m) * 255);
         b = Math.round((b + m) * 255);
         
-        return new RGBColor(r, g, b);
+        return new RGBColor(r, g, b, this.a);
+    }
+
+    /**
+     * 현재 HSVColor 값에 해당하는 신규 HexColor 객체를 반환합니다
+     * @returns {HexColor} 현재 HSVColor 값에 해당하는 신규 HexColor 객체
+     */
+    toHex() {
+        return this.toRgb().toHex();
     }
 
     /**
@@ -805,11 +971,11 @@ class HSVColor extends Color {
     }
 
     /**
-     * 현재 HSVColor 값에 해당하는 신규 HexColor 객체를 반환합니다
-     * @returns {HexColor} 현재 HSVColor 값에 해당하는 신규 HexColor 객체
+     * 현재 HSVColor 값에 해당하는 신규 HSVColor 객체를 반환합니다
+     * @returns {HSVColor} 현재 HSVColor 값에 해당하는 신규 HSVColor 객체
      */
-    toHex() {
-        return this.toRgb().toHex();
+    toHsv() {
+        return new HSVColor(this.h, this.s, this.v, this.a);
     }
 
     /**
@@ -928,6 +1094,21 @@ class HtmlColorName extends Color {
     }
 
     /**
+     * 다른 객체 값을 통해 현재 클래스의 객체를 신규로 생성하여 반환합니다
+     * @param {Color} 색상 객체
+     * @returns {HtmlColorName} 현재 클래스 신규 객체
+     */
+    from(color) {
+        if( color instanceof HtmlColorName ) {
+            return new HtmlColorName(color.name);
+        } else if( color instanceof Color ) {
+            return color.toHtmlColorName();
+        } else {
+            throw new Error(`Conversion to ${this.constructor.name} from ${color.constructor.name} is not supported.`);
+        }
+    }
+
+    /**
      * 현재 HtmlColorName 객체의 값을 CSS 문자열 형식으로 반환합니다
      * ex) "red"
      * @returns {string} HTML 색상명
@@ -947,6 +1128,14 @@ class HtmlColorName extends Color {
         }
 
         return null;
+    }
+
+    /**
+     * 현재 HtmlColorName 값에 해당하는 신규 HexColor 객체를 반환합니다
+     * @returns {HexColor} 현재 HtmlColorName 값에 해당하는 신규 HexColor 객체
+     */
+    toHex() {
+        return HTML_COLOR_NAMES[this.name]? new HexColor(HTML_COLOR_NAMES[this.name]) : null;
     }
 
     /**
@@ -976,11 +1165,12 @@ class HtmlColorName extends Color {
     }
 
     /**
-     * 현재 HtmlColorName 값에 해당하는 신규 HexColor 객체를 반환합니다
-     * @returns {HexColor} 현재 HtmlColorName 값에 해당하는 신규 HexColor 객체
+     * 현재 HtmlColorName 값에 해당하는 HtmlColorName 객체를 반환합니다.
+     * 해당하는 값이 없는 경우 HtmlColorName 객체의 name 속성 값은 null이 됩니다.
+     * @returns {HtmlColorName} 새로운 HtmlColorName 객체
      */
-    toHex() {
-        return HTML_COLOR_NAMES[this.name]? new HexColor(HTML_COLOR_NAMES[this.name]) : null;
+    toHtmlColorName() {
+        return new HtmlColorName(this.name);
     }
 
     /**
