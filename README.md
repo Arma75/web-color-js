@@ -13,6 +13,7 @@
 * **색상 거리 측정:** `calcDistanceColor(srcColor, dstColor, options)`: HSL 색상 공간에서 두 색상 간의 지각적 거리를 계산하며, Hue, Saturation, Lightness에 각각 가중치 적용 가능.
 * **WCAG 대비율 계산:** `calcWCAGContrast(srcColor, dstColor, options)`: 두 색상 간의 WCAG 대비율을 계산하며, options로 폰트의 사이즈와 볼드체 여부 지정 가능.
 * **스케일별 색상 생성:** `createColorScaleList(colorScaleInfo, color, index)`: 색상 스케일 정보에 따라 특정 색상 기준으로 색상 스케일 목록 생성 가능.
+* **색상 선형 보간:** `lerpColor(srcColor, dstColor, ratio)`: 두 색상 사이의 특정 지점 색상을 선형 보간한 색상 객체 반환.
 
 ## 📦 CDN
 ```html
