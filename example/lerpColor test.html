@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <title>COLOR SORT</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="../style/common.css" type="text/css"/>
+        <script type="text/javascript" src="../web-color.js"></script>
+
+        <style>
+            body {
+                padding: 2.5rem;
+                min-width: 100vw;
+                min-height: 100vh;
+            }
+        </style>
+
+        <script>
+            window.onload = _ => {
+                let srcColor = new HSLColor(350, 0.5, 0.5).toRgb();
+                let dstColor = new HSLColor(20, 1, 0.5).toRgb();
+                console.log(srcColor.toCssString());
+                console.log(dstColor.toCssString());
+                console.log(lerpColor(srcColor, dstColor, 0).toCssString());
+                console.log(lerpColor(srcColor, dstColor, 0.5).toCssString());
+                console.log(lerpColor(srcColor, dstColor, 1).toCssString());
+            };
+        </script>
+    </head>
+
+    <body>
+    </body>
+</html>

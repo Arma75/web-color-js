@@ -1365,3 +1365,37 @@ function createColorScaleList(colorScaleInfo, color, index) {
     
     return colorScaleList;
 }
+
+/**
+ * 두 색상 사이의 특정 지점 색상을 선형 보간하여 반환합니다
+ * 
+ * @param {Color} srcColor 시작 색상 객체
+ * @param {Color} dstColor 도착 색상 객체
+ * @param {number} ratio 0과 1 사이의 숫자
+ * @returns {HSLColor|null} 보간된 HSL 색상 객체. srcColor가 Color 객체가 아니거나, dstColor가 Color 객체가 아니거나, ratio가 0과 1 사이의 숫자가 아니면 null 반환
+ */
+function lerpColor(srcColor, dstColor, ratio = 0.5) {
+    if( !(srcColor instanceof Color) ) {
+        return null;
+    } else if( !(dstColor instanceof Color) ) {
+        return null;
+    } else if( ratio < 0 || ratio > 1 ) {
+        return null;
+    }
+
+    let srcHslColor = srcColor.toHsl();
+    let dstHslColor = dstColor.toHsl();
+
+    let hGap = dstHslColor.h - srcHslColor.h;
+    if( hGap > 180 ) {
+        hGap -= 360;
+    } else if( hGap < -180 ) {
+        hGap += 360;
+    }
+
+    let h = (srcHslColor.h + hGap * ratio + 360) % 360;
+    let s = srcHslColor.s + (dstHslColor.s - srcHslColor.s) * ratio;
+    let l = srcHslColor.l + (dstHslColor.l - srcHslColor.l) * ratio;
+
+    return new HSLColor(h, s, l);
+}
